@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<title>Vault Dashboard</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    margin: 0;
+    padding: 30px;
+  }
+  h1 {
+    color: #38bdf8;
+    text-align: center;
+  }
+  .container {
+    max-width: 900px;
+    margin: auto;
+  }
+  .card {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .card h2 {
+    margin-top: 0;
+    color: #7dd3fc;
+    font-size: 18px;
+  }
+  input, select {
+    padding: 8px;
+    margin: 5px 5px 5px 0;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+  }
+  button {
+    background: #0ea5e9;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  button:hover {
+    background: #0284c7;
+  }
+  pre {
+    background: #0f172a;
+    padding: 10px;
+    border-radius: 5px;
+    color: #4ade80;
+    min-height: 20px;
+    white-space: pre-wrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🔐 VAULT: Fault-Tolerant Storage System</h1>
+
+  <div class="card">
+    <h2>1. Store File</h2>
+    <input type="text" id="storeFilename" placeholder="filename (jaise test.txt)">
+    <input type="number" id="storeReplicas" placeholder="replicas" value="3" style="width:70px">
+    <button onclick="storeFile()">Store</button>
+    <pre id="storeOutput"></pre>
+  </div>
+
+  <div class="card">
+    <h2>2. Node Health Check</h2>
+    <input type="text" id="healthFilename" placeholder="filename">
+    <button onclick="checkHealth()">Check Health</button>
+    <pre id="healthOutput"></pre>
+  </div>
+
+  <div class="card">
+    <h2>3. Simulate Node Failure</h2>
+    <input type="text" id="failFilename" placeholder="filename">
+    <select id="failNode">
+      <option value="node1">node1</option>
+      <option value="node2">node2</option>
+      <option value="node3">node3</option>
+    </select>
+    <button onclick="failNode()">Fail Node</button>
+    <pre id="failOutput"></pre>
+  </div>
+
+  <div class="card">
+    <h2>4. Auto-Repair</h2>
+    <input type="text" id="repairFilename" placeholder="filename">
+    <button onclick="repairFile()">Repair</button>
+    <pre id="repairOutput"></pre>
+  </div>
+
+  <div class="card">
+    <h2>5. Retrieve File</h2>
+    <input type="text" id="retrieveFilename" placeholder="filename">
+    <button onclick="retrieveFile()">Retrieve</button>
+    <pre id="retrieveOutput"></pre>
+  </div>
+
+  <div class="card">
+    <h2>6. Rebalance</h2>
+    <button onclick="rebalance()">Rebalance All</button>
+    <pre id="rebalanceOutput"></pre>
+  </div>
+
+  <div class="card">
+    <h2>7. Storage Overhead Report</h2>
+    <button onclick="storageReport()">Get Report</button>
+    <pre id="storageOutput"></pre>
+  </div>
+</div>
+
+<script>
+const BASE = "http://127.0.0.1:5000";
+
+async function storeFile() {
+  const filename = document.getElementById("storeFilename").value;
+  const replicas = parseInt(document.getElementById("storeReplicas").value);
+  const res = await fetch(BASE + "/store", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({filename, replicas})
+  });
+  const data = await res.json();
+  document.getElementById("storeOutput").innerText = JSON.stringify(data, null, 2);
+}
+
+async function checkHealth() {
+  const filename = document.getElementById("healthFilename").value;
+  const res = await fetch(BASE + "/health/" + filename);
+  const data = await res.json();
+  document.getElementById("healthOutput").innerText = JSON.stringify(data, null, 2);
+}
+
+async function failNode() {
+  const filename = document.getElementById("failFilename").value;
+  const node = document.getElementById("failNode").value;
+  const res = await fetch(BASE + "/fail", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({filename, node})
+  });
+  const data = await res.json();
+  document.getElementById("failOutput").innerText = JSON.stringify(data, null, 2);
+}
+
+async function repairFile() {
+  const filename = document.getElementById("repairFilename").value;
+  const res = await fetch(BASE + "/repair", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({filename})
+  });
+  const data = await res.json();
+  document.getElementById("repairOutput").innerText = JSON.stringify(data, null, 2);
+}
+
+async function retrieveFile() {
+  const filename = document.getElementById("retrieveFilename").value;
+  const res = await fetch(BASE + "/retrieve/" + filename);
+  const data = await res.json();
+  document.getElementById("retrieveOutput").innerText = JSON.stringify(data, null, 2);
+}
+
+async function rebalance() {
+  const res = await fetch(BASE + "/rebalance", { method: "POST" });
+  const data = await res.json();
+  document.getElementById("rebalanceOutput").innerText = JSON.stringify(data, null, 2);
+}
+
+async function storageReport() {
+  const res = await fetch(BASE + "/storage-report");
+  const data = await res.json();
+  document.getElementById("storageOutput").innerText = JSON.stringify(data, null, 2);
+}
+</script>
+
+</body>
+</html>
